@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build-env
+WORKDIR /app
+
+# Copy csproj and restore as distinct layers
+#COPY *.csproj ./
+COPY . ./
+RUN dotnet restore
+
+# Copy everything else and build
+#COPY . ./
+#RUN dotnet test
+RUN mkdir -p Reports
+RUN dotnet test --logger 'trx;LogFileName=TestResults.trx' --results-directory Reports/UnitTests /p:CollectCoverage=true /p:CoverletOutput=Reports/Coverage/ /p:CoverletOutputFormat=cobertura
+RUN ls Reports
+RUN dotnet publish -c Release -o out
+
+# Build runtime image/app/src/SampleDotNetCore2RestStub/out/
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim 
+WORKDIR /app
+#COPY --from=build-env /app/out .
+COPY --from=build-env /app/src/SampleDotNetCore2RestStub/out .
+ENTRYPOINT ["dotnet", "SampleDotNetCore2RestStub.dll"]

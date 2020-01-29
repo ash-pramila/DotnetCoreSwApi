@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch
+WORKDIR /app
+
+# Copy everything else and build
+COPY . ./
+#RUN dotnet restore
+RUN dotnet build
+RUN mkdir -p Reports
+
+#Sonar
+RUN apt-get update && apt-get install -y openjdk-8-jre
+RUN dotnet tool install --global dotnet-sonarscanner
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN dotnet test WideWorldImporters.API.UnitTests/WideWorldImporters.API.UnitTests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=/app/Reports/Coverage/
+RUN dotnet sonarscanner begin /k:WideWorldImporters.API /d:sonar.host.url=https://sonarqube-rg.azurewebsites.net /d:sonar.cs.opencover.reportsPaths=/app/Reports/Coverage/coverage.opencover.xml /d:sonar.coverage.exclusions=”**Test*.cs”
+RUN dotnet build
+RUN dotnet sonarscanner end
+
+ENTRYPOINT dotnet test WideWorldImporters.API.UnitTests/WideWorldImporters.API.UnitTests.csproj --logger 'trx;LogFileName=TestResults.trx' --results-directory /app/Reports/UnitTests /p:CollectCoverage=true /p:CoverletOutput=/app/Reports/Coverage/ /p:CoverletOutputFormat=cobertura
