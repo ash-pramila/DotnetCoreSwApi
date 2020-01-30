@@ -1,0 +1,23 @@
+pool:
+  vmImage: 'ubuntu-16.04'
+variables:
+  buildConfiguration: 'Release'
+steps:
+- script: |
+   docker build -f Dockerfile-build -t dotnetcore-build:$BUILD_BUILDID .
+   docker run --name dotnetcoretest dotnetcore-build:$BUILD_BUILDID
+   docker cp dotnetcoretest:/app/Reports/ $(System.DefaultWorkingDirectory)
+   docker rm dotnetcoretest
+  displayName: 'Bash Script'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results'
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**/**/*.trx'
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage'
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.cobertura.xml'
