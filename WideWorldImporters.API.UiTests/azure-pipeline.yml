@@ -1,0 +1,18 @@
+pool:
+  vmImage: 'ubuntu-16.04'
+variables:
+  buildConfiguration: 'Release'
+steps:
+- script: |
+   docker build -f Dockerfile-base -t aspchrome .
+   docker build -t dotnetcoreui-build:$BUILD_BUILDID .
+   docker run --name dotnetcoreui dotnetcoreui-build:$BUILD_BUILDID
+   docker cp dotnetcoreui:/data/Reports/ $(System.DefaultWorkingDirectory)
+   docker rm dotnetcoreui
+  displayName: 'Bash Script'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results'
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**/**/*.trx
