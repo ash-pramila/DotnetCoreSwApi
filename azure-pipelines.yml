@@ -15,6 +15,7 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: '**/**/*.trx'
+    testRunTitle: UnitTest
 
 - task: PublishCodeCoverageResults@1
   displayName: 'Publish code coverage'
