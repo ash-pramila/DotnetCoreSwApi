@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build-env
 WORKDIR /app
 
-# Copy everything else and build
+# Copy everything including xml and build
 COPY . ./
 RUN dotnet build
 RUN dotnet publish -c Release -o out
