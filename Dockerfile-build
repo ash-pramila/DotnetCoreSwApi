@@ -16,4 +16,5 @@ RUN dotnet sonarscanner begin /k:WideWorldImporters.API /d:sonar.host.url=https:
 RUN dotnet build
 RUN dotnet sonarscanner end
 
+#Run tests
 ENTRYPOINT dotnet test WideWorldImporters.API.UnitTests/WideWorldImporters.API.UnitTests.csproj --logger 'trx;LogFileName=TestResults.trx' --results-directory /app/Reports/UnitTests /p:CollectCoverage=true /p:CoverletOutput=/app/Reports/Coverage/ /p:CoverletOutputFormat=cobertura
